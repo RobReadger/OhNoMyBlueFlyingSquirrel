@@ -27,6 +27,7 @@ class SpriteConfig:
     duration: float | None
     columns: int | None
     column_padding: int | None
+    rows: int | None
 
 
 class Entity(Body, ABC):
@@ -65,7 +66,7 @@ class Entity(Body, ABC):
                 )
                 image_grid = image.ImageGrid(
                     sprite_sheet,
-                    rows=1,
+                    rows=sprite_config.rows,
                     columns=sprite_config.columns,
                     column_padding=sprite_config.column_padding,
                 )

@@ -17,6 +17,8 @@ RED = (255, 0, 0)
 BG_COLOR = (89, 89, 89)
 GRID_COLOR = (140, 140, 140)
 PURPLE = (204, 0, 255)
+BLUE = (0, 153, 204)
+BLACK = (51, 51, 51)
 
 win = Window(
     resizable=True,
@@ -63,6 +65,8 @@ class Placable(Enum):
     BLOCK = 1
     ENEMY = 2
     PLAYER_SPAWN = 3
+    AMMO = 4
+    LEVEL_END = 5
 
     def getShape(self) -> shapes.ShapeBase:
         match self.value:
@@ -76,6 +80,14 @@ class Placable(Enum):
                 )
             case Placable.PLAYER_SPAWN.value:
                 return shapes.Circle(x=0, y=0, radius=10, color=RED)
+            case Placable.AMMO.value:
+                return shapes.Rectangle(
+                    x=0, y=0, width=grid_gap, height=grid_gap, color=BLUE
+                )
+            case Placable.LEVEL_END.value:
+                return shapes.Rectangle(
+                    x=0, y=0, width=2 * grid_gap, height=2 * grid_gap, color=BLACK
+                )
 
 
 @dataclass
@@ -83,6 +95,8 @@ class LevelBuild:
     blocks: dict[np.array : Placable.BLOCK]
     enemies: dict[np.array : Placable.ENEMY]
     player_spawn: np.array
+    ammo: dict[np.array : Placable.AMMO]
+    level_end: np.array
 
     def save(self) -> None:
         levels = os.listdir("levels")
@@ -102,6 +116,12 @@ class LevelBuild:
 
         if self.player_spawn is not None:
             level.player_spawn = (self.player_spawn[0], self.player_spawn[1])
+
+        if self.ammo is not None:
+            level.ammo = [(key[0], key[1]) for key in self.ammo.keys()]
+
+        if self.level_end is not None:
+            level.level_end = (self.level_end[0], self.level_end[1])
 
         with open(os.path.join("levels", filename), "w") as out:
             out.write(json.dumps(level, cls=LevelEncoder, indent=4))
@@ -135,7 +155,7 @@ mouse_grid_pos = [0, 0]
 mode = 1
 
 
-level = LevelBuild({}, {}, None)
+level = LevelBuild({}, {}, None, {}, None)
 
 
 @win.event
@@ -160,6 +180,7 @@ def on_mouse_motion(x, y, dx, dy):
 
 block_batch = Batch()
 enemy_batch = Batch()
+ammo_batch = Batch()
 
 
 def place_item(item: Placable):
@@ -192,6 +213,23 @@ def place_item(item: Placable):
 
             level.enemies[mouse_grid_pos] = enemy
 
+        case Placable.AMMO:
+            if mouse_grid_pos in level.ammo:
+                return
+
+            ammo = Placable.AMMO.getShape()
+            ammo.batch = enemy_batch
+            ammo.x = mouse_grid_pos[0]
+            ammo.y = mouse_grid_pos[1]
+
+            level.ammo[mouse_grid_pos] = ammo
+
+        case Placable.LEVEL_END:
+            if mouse_grid_pos == level.level_end:
+                return
+
+            level.level_end = mouse_grid_pos
+
 
 def remove_item(item: Placable):
     match item:
@@ -213,6 +251,18 @@ def remove_item(item: Placable):
                 return
 
             del level.enemies[mouse_grid_pos]
+
+        case Placable.AMMO:
+            if mouse_grid_pos not in level.ammo:
+                return
+
+            del level.ammo[mouse_grid_pos]
+
+        case Placable.LEVEL_END:
+            if mouse_grid_pos != level.level_end:
+                return
+
+            level.level_end = None
 
 
 @win.event
@@ -237,6 +287,7 @@ def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
 
 
 spawn_sprite = Placable.PLAYER_SPAWN.getShape()
+level_end_sprite = Placable.LEVEL_END.getShape()
 
 
 @win.event
@@ -256,6 +307,7 @@ def on_draw():
     label.draw()
     block_batch.draw()
     enemy_batch.draw()
+    ammo_batch.draw()
 
     mouse_sprite = selected_item.getShape()
     mouse_sprite.x = mouse_grid_pos[0]
@@ -268,6 +320,11 @@ def on_draw():
         spawn_sprite.x = level.player_spawn[0]
         spawn_sprite.y = level.player_spawn[1]
         spawn_sprite.draw()
+
+    if level.level_end is not None:
+        level_end_sprite.x = level.level_end[0]
+        level_end_sprite.y = level.level_end[1]
+        level_end_sprite.draw()
 
     cam_speed = 30
 
@@ -293,6 +350,10 @@ def on_draw():
         selected_item = Placable.ENEMY
     if keys[key._3]:
         selected_item = Placable.PLAYER_SPAWN
+    if keys[key._4]:
+        selected_item = Placable.AMMO
+    if keys[key._5]:
+        selected_item = Placable.LEVEL_END
 
     win.view = Mat4().translate((-(camera_pos[0]), -(camera_pos[1]), 0))
 

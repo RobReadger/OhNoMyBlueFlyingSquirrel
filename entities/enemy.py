@@ -46,6 +46,7 @@ class Enemy(Entity):
                     duration=0.3,
                     columns=11,
                     column_padding=0,
+                    rows=1,
                 ),
                 SpriteConfig(
                     mode=EntityMode.WALKING,
@@ -53,6 +54,7 @@ class Enemy(Entity):
                     duration=0.2,
                     columns=13,
                     column_padding=0,
+                    rows=1,
                 ),
                 SpriteConfig(
                     mode=EntityMode.JUMPING,
@@ -60,6 +62,7 @@ class Enemy(Entity):
                     duration=0.2,
                     columns=13,
                     column_padding=0,
+                    rows=1,
                 ),
                 SpriteConfig(
                     mode=EntityMode.ATTACKING,
@@ -67,6 +70,7 @@ class Enemy(Entity):
                     duration=0.1,
                     columns=18,
                     column_padding=0,
+                    rows=1,
                 ),
             ],
         )

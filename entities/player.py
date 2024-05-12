@@ -1,10 +1,9 @@
 import time
-from pyglet import app
 from pyglet.window import key
 from core.direction import Direction
 from entities.bullet import Bullet
 from core.entity import JUMP_ACC, Entity, EntityMode, SpriteConfig
-
+from enums.game_state import GameState
 
 PLAYER_WIDTH = 75
 PLAYER_HEIGHT = 75
@@ -18,6 +17,7 @@ class Player(Entity):
             pos[0], pos[1], PLAYER_WIDTH, PLAYER_HEIGHT, level_context, 100
         )
 
+        self.ammo_count = 0
         self.bullet_timeout = (False, 0)
         self.load_mode_sprite_map(
             "assets/sprites/player/",
@@ -28,6 +28,7 @@ class Player(Entity):
                     duration=0.2,
                     columns=6,
                     column_padding=35,
+                    rows=1,
                 ),
                 SpriteConfig(
                     mode=EntityMode.WALKING,
@@ -35,6 +36,7 @@ class Player(Entity):
                     duration=0.1,
                     columns=8,
                     column_padding=35,
+                    rows=1,
                 ),
                 SpriteConfig(
                     mode=EntityMode.JUMPING,
@@ -42,13 +44,18 @@ class Player(Entity):
                     duration=None,
                     columns=None,
                     column_padding=35,
+                    rows=1,
                 ),
             ],
         )
 
     def update(self, keys: key.KeyStateHandler):
         if self.health <= 0:
-            app.exit()
+            self.level_context.game_context.game_state = GameState.GAME_OVER
+            return
+
+        if self.pos[1] < 0:
+            self.health -= 1
 
         self.center = self.pos + self.hitbox / 2
 
@@ -64,6 +71,9 @@ class Player(Entity):
         # self.show_hitbox()
 
     def handle_shooting(self, keys, bullets):
+        if self.ammo_count == 0:
+            return
+
         if time.time() > self.bullet_timeout[1]:
             self.bullet_timeout = (False, 0)
 
@@ -77,6 +87,7 @@ class Player(Entity):
                     self.level_context,
                 )
                 self.bullet_timeout = (True, time.time() + BULLET_TIMEOUT)
+                self.ammo_count -= 1
 
     def handle_movement(self, keys):
         if keys[key.W]:

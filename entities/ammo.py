@@ -1,33 +1,24 @@
-import time
 from core.entity import Entity, EntityMode, SpriteConfig
 
-
-BULLET_WIDTH = 10
-BULLET_HEIGHT = 10
+AMMO_WIDTH = 30
 
 
-class Bullet(Entity):
+class Ammo(Entity):
     def __init__(
         self,
         x,
         y,
-        direction,
-        bullets: list["Bullet"],
         level_context,
-        lifetime: float = 3,
     ):
-        super().__init__(x, y, BULLET_WIDTH, BULLET_HEIGHT, level_context, 0)
-        self.direction = direction
-        self.lifetime = time.time() + lifetime
-        bullets.append(self)
+        super().__init__(x, y, AMMO_WIDTH, AMMO_WIDTH, level_context, 0)
 
-        self.current_mode = EntityMode.WALKING
+        self.current_mode = EntityMode.IDLE
 
         self.load_mode_sprite_map(
             "assets/sprites/bullet/",
             [
                 SpriteConfig(
-                    mode=EntityMode.WALKING,
+                    mode=EntityMode.IDLE,
                     is_animation=False,
                     duration=None,
                     column_padding=None,
@@ -38,5 +29,4 @@ class Bullet(Entity):
         )
 
     def update(self):
-        self.vel = self.direction * self.speed
-        self.pos += self.vel
+        pass
