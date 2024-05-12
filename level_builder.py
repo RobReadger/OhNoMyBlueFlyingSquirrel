@@ -34,20 +34,20 @@ camera_pos = [0, 0]
 # Generate grid
 grid = []
 grid_batch = Batch()
-grid_gap = 30
-num_of_lines = 1000
+GRID_GAP = 30
+NUM_OF_LINES = 1000
 
 block_batch = Batch()
 enemy_batch = Batch()
 ammo_batch = Batch()
 
-for i in range(-num_of_lines // 2, num_of_lines // 2):
+for i in range(-NUM_OF_LINES // 2, NUM_OF_LINES // 2):
     grid.append(
         shapes.Line(
-            -num_of_lines // 2 * grid_gap,
-            i * grid_gap,
-            num_of_lines // 2 * grid_gap,
-            i * grid_gap,
+            -NUM_OF_LINES // 2 * GRID_GAP,
+            i * GRID_GAP,
+            NUM_OF_LINES // 2 * GRID_GAP,
+            i * GRID_GAP,
             color=GRID_COLOR,
             batch=grid_batch,
         )
@@ -55,10 +55,10 @@ for i in range(-num_of_lines // 2, num_of_lines // 2):
 
     grid.append(
         shapes.Line(
-            i * grid_gap,
-            -num_of_lines // 2 * grid_gap,
-            i * grid_gap,
-            num_of_lines // 2 * grid_gap,
+            i * GRID_GAP,
+            -NUM_OF_LINES // 2 * GRID_GAP,
+            i * GRID_GAP,
+            NUM_OF_LINES // 2 * GRID_GAP,
             color=GRID_COLOR,
             batch=grid_batch,
         )
@@ -72,25 +72,25 @@ class Placable(Enum):
     AMMO = 4
     LEVEL_END = 5
 
-    def getShape(self) -> shapes.ShapeBase:
+    def get_shape(self) -> shapes.ShapeBase:
         match self.value:
             case Placable.BLOCK.value:
                 return shapes.Rectangle(
-                    x=0, y=0, width=grid_gap, height=grid_gap, color=WHITE
+                    x=0, y=0, width=GRID_GAP, height=GRID_GAP, color=WHITE
                 )
             case Placable.ENEMY.value:
                 return shapes.Rectangle(
-                    x=0, y=0, width=grid_gap, height=2 * grid_gap, color=PURPLE
+                    x=0, y=0, width=GRID_GAP, height=2 * GRID_GAP, color=PURPLE
                 )
             case Placable.PLAYER_SPAWN.value:
                 return shapes.Circle(x=0, y=0, radius=10, color=RED)
             case Placable.AMMO.value:
                 return shapes.Rectangle(
-                    x=0, y=0, width=grid_gap, height=grid_gap, color=BLUE
+                    x=0, y=0, width=GRID_GAP, height=GRID_GAP, color=BLUE
                 )
             case Placable.LEVEL_END.value:
                 return shapes.Rectangle(
-                    x=0, y=0, width=2 * grid_gap, height=2 * grid_gap, color=BLACK
+                    x=0, y=0, width=2 * GRID_GAP, height=2 * GRID_GAP, color=BLACK
                 )
 
 
@@ -135,7 +135,7 @@ class LevelBuild:
             loaded_level: Level = json.load(f, cls=LevelDecoder)
 
             for block_pos in loaded_level.blocks:
-                block = Placable.BLOCK.getShape()
+                block = Placable.BLOCK.get_shape()
                 block.batch = block_batch
                 block.x = block_pos[0]
                 block.y = block_pos[1]
@@ -143,7 +143,7 @@ class LevelBuild:
                 self.blocks[block_pos] = block
 
             for enemy_pos in loaded_level.enemies:
-                enemy = Placable.ENEMY.getShape()
+                enemy = Placable.ENEMY.get_shape()
                 enemy.batch = enemy_batch
                 enemy.x = enemy_pos[0]
                 enemy.y = enemy_pos[1]
@@ -151,7 +151,7 @@ class LevelBuild:
                 self.enemies[enemy_pos] = enemy
 
             for ammo_pos in loaded_level.ammo:
-                ammo = Placable.AMMO.getShape()
+                ammo = Placable.AMMO.get_shape()
                 ammo.batch = ammo_batch
                 ammo.x = ammo_pos[0]
                 ammo.y = ammo_pos[1]
@@ -192,8 +192,8 @@ def update_mouse_pos(x, y):
     global mouse_grid_pos
 
     mouse_grid_pos = (
-        x - x % grid_gap + camera_pos[0] - camera_pos[0] % grid_gap,
-        y - y % grid_gap + camera_pos[1] - camera_pos[1] % grid_gap,
+        x - x % GRID_GAP + camera_pos[0] - camera_pos[0] % GRID_GAP,
+        y - y % GRID_GAP + camera_pos[1] - camera_pos[1] % GRID_GAP,
     )
 
 
@@ -203,12 +203,13 @@ def on_mouse_motion(x, y, dx, dy):
 
 
 def place_item(item: Placable):
+    """Places selected item"""
     match item:
         case Placable.BLOCK:
             if mouse_grid_pos in level.blocks:
                 return
 
-            block = Placable.BLOCK.getShape()
+            block = Placable.BLOCK.get_shape()
             block.batch = block_batch
             block.x = mouse_grid_pos[0]
             block.y = mouse_grid_pos[1]
@@ -225,7 +226,7 @@ def place_item(item: Placable):
             if mouse_grid_pos in level.enemies:
                 return
 
-            enemy = Placable.ENEMY.getShape()
+            enemy = Placable.ENEMY.get_shape()
             enemy.batch = enemy_batch
             enemy.x = mouse_grid_pos[0]
             enemy.y = mouse_grid_pos[1]
@@ -236,7 +237,7 @@ def place_item(item: Placable):
             if mouse_grid_pos in level.ammo:
                 return
 
-            ammo = Placable.AMMO.getShape()
+            ammo = Placable.AMMO.get_shape()
             ammo.batch = enemy_batch
             ammo.x = mouse_grid_pos[0]
             ammo.y = mouse_grid_pos[1]
@@ -251,6 +252,7 @@ def place_item(item: Placable):
 
 
 def remove_item(item: Placable):
+    """Removes selected item"""
     match item:
         case Placable.BLOCK:
 
@@ -305,8 +307,8 @@ def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
         remove_item(selected_item)
 
 
-spawn_sprite = Placable.PLAYER_SPAWN.getShape()
-level_end_sprite = Placable.LEVEL_END.getShape()
+spawn_sprite = Placable.PLAYER_SPAWN.get_shape()
+level_end_sprite = Placable.LEVEL_END.get_shape()
 
 
 @win.event
@@ -328,7 +330,7 @@ def on_draw():
     enemy_batch.draw()
     ammo_batch.draw()
 
-    mouse_sprite = selected_item.getShape()
+    mouse_sprite = selected_item.get_shape()
     mouse_sprite.x = mouse_grid_pos[0]
     mouse_sprite.y = mouse_grid_pos[1]
     mouse_sprite.opacity = 128

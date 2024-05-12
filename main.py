@@ -1,10 +1,8 @@
 import os
 from pyglet import app, window
 from core.game_context import GameContext
-from core.level_context import LevelContext
 from pyglet.window import key
 
-from enums.game_state import GameState
 
 width = 1280
 height = 720
