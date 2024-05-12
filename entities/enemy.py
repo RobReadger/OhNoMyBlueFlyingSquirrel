@@ -101,7 +101,7 @@ class Enemy(Entity):
             self.attack_timeout = (False, 0)
 
         if self.current_mode == EntityMode.ATTACKING and not self.attack_timeout[0]:
-            self.level_context.player.health -= 10
+            self.level_context.player.health -= 50
             self.attack_timeout = (True, time.time() + ATTACK_TIMEOUT)
 
         self.vel += self.acc
@@ -122,7 +122,7 @@ class Enemy(Entity):
 
         if dist < 50:
             if not self.started_attack:
-                self.attack_timeout = (True, time.time() + 0.7)
+                # self.attack_timeout = (True, time.time() + 0.2)
                 self.started_attack = True
 
             self.vel[0] = 0

@@ -54,7 +54,7 @@ class Player(Entity):
             self.level_context.game_context.game_state = GameState.GAME_OVER
             return
 
-        if self.pos[1] < 0:
+        if self.pos[1] < -1000:
             self.health -= 1
 
         self.center = self.pos + self.hitbox / 2

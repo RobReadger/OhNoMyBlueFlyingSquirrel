@@ -37,6 +37,10 @@ grid_batch = Batch()
 grid_gap = 30
 num_of_lines = 1000
 
+block_batch = Batch()
+enemy_batch = Batch()
+ammo_batch = Batch()
+
 for i in range(-num_of_lines // 2, num_of_lines // 2):
     grid.append(
         shapes.Line(
@@ -126,16 +130,36 @@ class LevelBuild:
         with open(os.path.join("levels", filename), "w") as out:
             out.write(json.dumps(level, cls=LevelEncoder, indent=4))
 
-    # def load(self, level_name: str) -> None:
-    #     with open(os.path.join("levels", level_name), "r") as f:
-    #         loaded_level = json.load(f, cls=LevelDecoder)
-    #         level = loaded_level
+    def load(self, level_name: str) -> None:
+        with open(os.path.join("levels", level_name), "r") as f:
+            loaded_level: Level = json.load(f, cls=LevelDecoder)
 
-    #     for block_pos in level.blocks:
-    #         block = Block(block_pos[0], block_pos[1], grid_gap, grid_gap, color=WHITE)
-    #         block.add_to_batch(block_batch)
+            for block_pos in loaded_level.blocks:
+                block = Placable.BLOCK.getShape()
+                block.batch = block_batch
+                block.x = block_pos[0]
+                block.y = block_pos[1]
 
-    #         block_dict[block_pos] = block
+                self.blocks[block_pos] = block
+
+            for enemy_pos in loaded_level.enemies:
+                enemy = Placable.ENEMY.getShape()
+                enemy.batch = enemy_batch
+                enemy.x = enemy_pos[0]
+                enemy.y = enemy_pos[1]
+
+                self.enemies[enemy_pos] = enemy
+
+            for ammo_pos in loaded_level.ammo:
+                ammo = Placable.AMMO.getShape()
+                ammo.batch = ammo_batch
+                ammo.x = ammo_pos[0]
+                ammo.y = ammo_pos[1]
+
+                self.ammo[ammo_pos] = ammo
+
+            self.player_spawn = loaded_level.player_spawn
+            self.level_end = loaded_level.level_end
 
 
 selected_item: Placable = Placable.BLOCK
@@ -176,11 +200,6 @@ def update_mouse_pos(x, y):
 @win.event
 def on_mouse_motion(x, y, dx, dy):
     update_mouse_pos(x, y)
-
-
-block_batch = Batch()
-enemy_batch = Batch()
-ammo_batch = Batch()
 
 
 def place_item(item: Placable):

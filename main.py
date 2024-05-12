@@ -1,3 +1,4 @@
+import os
 from pyglet import app, window
 from core.game_context import GameContext
 from core.level_context import LevelContext
@@ -17,7 +18,7 @@ win.push_handlers(keys)
 
 # level_context = LevelContext.load_level("level_4.json", win)
 
-game_context = GameContext(win)
+game_context = GameContext(win, os.listdir("./levels"))
 game_context.next_level()
 # game_context.game_state = GameState.GAME_OVER
 
